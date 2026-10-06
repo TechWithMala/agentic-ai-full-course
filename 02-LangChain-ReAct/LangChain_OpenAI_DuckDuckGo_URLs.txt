@@ -1,0 +1,3 @@
+LangChain official website - https://www.langchain.com/
+OpenAI Account creation URL - https://platform.openai.com/api-keys
+DuckDuckGo official website - https://duckduckgo.com/

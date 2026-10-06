@@ -1,4 +1,4 @@
-# Agentic AI Full Course | Build Real World AI Agents
+# Agentic AI Full Course | Build Real World AI Agents with LangChain, LangGraph, LlamaIndex & CrewAI
 
 Source code and hands-on projects from the **Agentic AI Full Course by Tech With Mala**.
 

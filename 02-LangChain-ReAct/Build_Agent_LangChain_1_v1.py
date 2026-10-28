@@ -4,11 +4,12 @@
 # python -m pip install -U langchain langchain-core langchain-openai langchain-classic langchain-community ddgs python-dotenv numexpr
 
 import os
-from dotenv import load_dotenv
+import uuid
 
+from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
-from langchain_core.tools import tool
+from langchain_core.tools import tool, Tool
 from langchain_community.tools import DuckDuckGoSearchResults
 from langchain_classic.agents import AgentExecutor, create_react_agent
 
@@ -27,7 +28,7 @@ if not api_key:
     )
 
 
-# 2. Initialize the OpenAI model
+# 2. Initialize the LLM
 openai_llm = ChatOpenAI(
     model="gpt-4.1-mini",
     temperature=0,
@@ -50,18 +51,22 @@ def calculator(expression: str) -> str:
 
 
 # 4. Define the DuckDuckGo search tool
-search = DuckDuckGoSearchResults(
-    max_results=5
+search = DuckDuckGoSearchResults(max_results=5)
+
+search_tool = Tool(
+    name="duckduck",
+    description=(
+        "A web search engine. Use this as a search "
+        "engine for general queries."
+    ),
+    func=search.run
 )
 
-tools = [
-    calculator,
-    search
-]
+tools = [calculator, search_tool]
 
 
-# 5. Create the ReAct prompt
-react_template = """Answer the following question as best you can.
+# 5. Create the ReAct template
+react_template = """Answer the following questions as best you can.
 You have access to the following tools:
 
 {tools}
@@ -69,13 +74,13 @@ You have access to the following tools:
 Use the following format:
 
 Question: the input question you must answer
-Thought: decide what to do next
+Thought: you should always think about what to do
 Action: the action to take, should be one of [{tool_names}]
 Action Input: the input to the action
 Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat)
+... (this Thought/Action/Action Input/Observation can repeat N times)
 Thought: I now know the final answer
-Final Answer: the final answer to the original question
+Final Answer: the final answer to the original input question
 
 Begin!
 
@@ -114,14 +119,10 @@ agent_executor = AgentExecutor(
 # 8. Invoke the agent
 question = (
     "What is the latest iPhone model and its price in USD? "
-    "Search for the latest available USD-to-GBP exchange rate, "
-    "calculate the approximate price in British pounds, "
-    "and explain the result. Include the sources found by search."
+    "Give me the price in UK currency."
 )
 
-response = agent_executor.invoke({
-    "input": question
-})
+response = agent_executor.invoke({"input": question})
 
 
 # 9. Print the final answer

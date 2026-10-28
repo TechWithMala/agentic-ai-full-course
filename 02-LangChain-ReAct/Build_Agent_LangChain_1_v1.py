@@ -4,7 +4,6 @@
 # python -m pip install -U langchain langchain-core langchain-openai langchain-classic langchain-community ddgs python-dotenv numexpr
 
 import os
-import uuid
 
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
@@ -53,13 +52,27 @@ def calculator(expression: str) -> str:
 # 4. Define the DuckDuckGo search tool
 search = DuckDuckGoSearchResults(max_results=5)
 
+
+def safe_search(query: str) -> str:
+    """Search the web and handle temporary search failures."""
+    try:
+        return search.run(query)
+    except Exception as e:
+        return (
+            f"Search failed: {type(e).__name__}: {e}. "
+            "Current information could not be verified. "
+            "Do not guess current facts or prices."
+        )
+
+
 search_tool = Tool(
     name="duckduck",
     description=(
-        "A web search engine. Use this as a search "
-        "engine for general queries."
+        "A web search engine for general queries. "
+        "Use it to find current information and sources. "
+        "If search fails, do not invent facts or prices."
     ),
-    func=search.run
+    func=safe_search
 )
 
 tools = [calculator, search_tool]
